@@ -30,7 +30,7 @@ export const createEvent = async (_prevState: any, formData: FormData) => {
         description
     }
 
-    await fetch(`${apiUrl}/events`, {
+    const response = await fetch(`${apiUrl}/events`, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
@@ -38,9 +38,11 @@ export const createEvent = async (_prevState: any, formData: FormData) => {
         }
     })
 
+    const event = await response.json() as ScheduledEvent
+
     revalidatePath("/cp2")
     revalidatePath("/cp3")
-    return { msg: "close" }
+    return { msg: "close", event }
 }
 
 export const deleteEvent = async (formData: FormData) => {

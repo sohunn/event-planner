@@ -3,10 +3,30 @@
 import React, { useActionState, useEffect, useState } from 'react'
 import { createEvent } from '../cp2/actions'
 import { toast } from 'react-toastify'
+import { ScheduledEvent } from '../types'
 
 function CreateEvent({ date }: { date?: Date }) {
     const [isVisible, setisVisible] = useState(false)
     const [status, formAction] = useActionState(createEvent, null)
+    const [popup, setpopup] = useState(false)
+    const [currentEvent, setcurrentEvent] = useState<ScheduledEvent | null>(null)
+
+    const scheduleNotification = (event: ScheduledEvent, snooze?: boolean) => {
+        setTimeout(() => {
+            const notification = new Notification(`Event: ${event.name}`, {
+                body: `Scheduled for ${event.time}`,
+                requireInteraction: true,
+            })
+
+            notification.onclick = () => notification.close()
+
+            notification.onclose = () => {
+                setpopup(true)
+                setcurrentEvent(event)
+            }
+
+        }, snooze ? 5 * 60 * 1000 : new Date(`${event.date}T${event.time}:00`).getTime() - Date.now())
+    }
 
     const formatDate = () => {
         if (date) {
@@ -21,6 +41,9 @@ function CreateEvent({ date }: { date?: Date }) {
         if (status?.msg) {
             if (status.msg === 'close') {
                 setisVisible(!isVisible)
+                if (Notification.permission === 'granted' && status.event) {
+                    scheduleNotification(status.event)
+                }
             }
             else {
                 toast(status.msg)
@@ -68,6 +91,24 @@ function CreateEvent({ date }: { date?: Date }) {
                             <button type='submit' className='btn btn-success'>Create</button>
                         </div>
                     </form>
+                </div>
+            }
+
+            {
+                popup && currentEvent &&
+                <div className='z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[35%] bg-base-300 rounded-lg p-6'>
+                    <p>Here's your reminder for: {currentEvent.name}<br />What would you like to do?</p>
+                    <div className='flex gap-4'>
+                        <button onClick={() => {
+                            scheduleNotification(currentEvent, true)
+                            setpopup(false)
+                            toast("You snoozed. I'll remind you again in 5 minutes!")
+                        }} className='btn btn-warning'>Snooze</button>
+                        <button onClick={() => {
+                            setpopup(false)
+                            toast("Event marked as complete")
+                        }} className='btn btn-error'>Cancel</button>
+                    </div>
                 </div>
             }
         </div>

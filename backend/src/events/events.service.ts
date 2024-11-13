@@ -12,7 +12,9 @@ export class EventsService {
     }
 
     create(event: ScheduledEvent) {
-        this.scheduledEvents.push({ ...event, id: ++this.currentID })
+        const newEvent = { ...event, id: ++this.currentID }
+        this.scheduledEvents.push(newEvent)
+        return newEvent
     }
 
     getAllEvents() {

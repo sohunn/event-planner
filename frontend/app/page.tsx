@@ -1,6 +1,15 @@
+"use client"
+
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
   return (
     <section className="min-h-svh flex justify-center items-center">
       <div>
@@ -22,6 +31,10 @@ export default function Home() {
 
           <Link className="underline text-lg text-blue-400" href="/cp4">
             CheckPoint 4
+          </Link>
+
+          <Link className="underline text-lg text-blue-400" href="/cp5">
+            CheckPoint 5
           </Link>
         </div>
       </div>
