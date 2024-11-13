@@ -15,6 +15,14 @@ export default function Home() {
           <Link className="underline text-lg text-blue-400" href="/cp2">
             CheckPoint 2
           </Link>
+
+          <Link className="underline text-lg text-blue-400" href="/cp3">
+            CheckPoint 3
+          </Link>
+
+          <Link className="underline text-lg text-blue-400" href="/cp4">
+            CheckPoint 4
+          </Link>
         </div>
       </div>
     </section>

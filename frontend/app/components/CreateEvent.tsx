@@ -2,14 +2,29 @@
 
 import React, { useActionState, useEffect, useState } from 'react'
 import { createEvent } from '../cp2/actions'
+import { toast } from 'react-toastify'
 
-function CreateEvent() {
+function CreateEvent({ date }: { date?: Date }) {
     const [isVisible, setisVisible] = useState(false)
     const [status, formAction] = useActionState(createEvent, null)
 
+    const formatDate = () => {
+        if (date) {
+            const year = date.getFullYear()
+            const month = String(date?.getMonth() + 1).padStart(2, '0');
+            const day = String(date?.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+    }
+
     useEffect(() => {
-        if (status?.msg === 'close') {
-            setisVisible(false)
+        if (status?.msg) {
+            if (status.msg === 'close') {
+                setisVisible(!isVisible)
+            }
+            else {
+                toast(status.msg)
+            }
         }
     }, [status])
 
@@ -37,7 +52,11 @@ function CreateEvent() {
 
                         <label>
                             <p>Pick a date</p>
-                            <input required className='px-2 w-full bg-base-100 rounded-lg mb-3' type="date" name='date' />
+                            {
+                                typeof date !== 'undefined'
+                                    ? <input required readOnly value={formatDate()} className='px-2 w-full bg-base-100 rounded-lg mb-3' type="date" name='date' />
+                                    : <input required className='px-2 w-full bg-base-100 rounded-lg mb-3' type="date" name='date' />
+                            }
                         </label>
 
                         <label>

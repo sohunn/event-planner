@@ -3,14 +3,20 @@
 import React, { useActionState, useEffect, useState } from 'react'
 import { ScheduledEvent } from '../types'
 import { deleteEvent, modifyEvent } from '../cp2/actions'
+import { toast } from 'react-toastify'
 
 function ScheduledEventComponent({ event }: { event: ScheduledEvent }) {
     const [editMode, seteditMode] = useState(false)
     const [status, formAction] = useActionState(modifyEvent, null)
 
     useEffect(() => {
-        if (status?.msg === 'close') {
-            seteditMode(false)
+        if (status?.msg) {
+            if (status.msg === 'close') {
+                seteditMode(!editMode)
+            }
+            else {
+                toast(status.msg)
+            }
         }
     }, [status])
 

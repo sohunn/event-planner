@@ -4,11 +4,24 @@ import { revalidatePath } from "next/cache"
 import { apiUrl } from "../constants"
 import { ScheduledEvent } from "../types"
 
+const isValidDate = (date: string, time: string) => {
+    const validDate = new Date(`${date}T${time}:00`)
+    if (validDate.getTime() < Date.now()) {
+        return false
+    }
+
+    return true
+}
+
 export const createEvent = async (_prevState: any, formData: FormData) => {
     const eventName = formData.get('name') as string
     const description = formData.get('description') as string
     const date = formData.get('date') as string
     const time = formData.get('time') as string
+
+    if (!isValidDate(date, time)) {
+        return { msg: "We cannot go back in time to remind you ^.^" }
+    }
 
     const payload: Omit<ScheduledEvent, "id"> = {
         name: eventName,
@@ -26,6 +39,7 @@ export const createEvent = async (_prevState: any, formData: FormData) => {
     })
 
     revalidatePath("/cp2")
+    revalidatePath("/cp3")
     return { msg: "close" }
 }
 
@@ -35,6 +49,7 @@ export const deleteEvent = async (formData: FormData) => {
         method: 'DELETE'
     })
     revalidatePath("/cp2")
+    revalidatePath("/cp3")
 }
 
 export const modifyEvent = async (_prevState: any, formData: FormData) => {
@@ -59,6 +74,21 @@ export const modifyEvent = async (_prevState: any, formData: FormData) => {
     // @ts-ignore
     if (event.description !== newDescription) newEvent.description = newDescription
 
+    // @ts-ignore
+    if (newEvent.date && newEvent.time && !isValidDate(newEvent.date, newEvent.time)) {
+        return { msg: "We cannot go back in time to remind you ^.^" }
+    }
+
+    // @ts-ignore
+    if (newEvent.date && !isValidDate(newEvent.date, event.time)) {
+        return { msg: "We cannot go back in time to remind you ^.^" }
+    }
+
+    // @ts-ignore
+    if (newEvent.time && !isValidDate(event.date, newEvent.time)) {
+        return { msg: "We cannot go back in time to remind you ^.^" }
+    }
+
     await fetch(`${apiUrl}/events/${id}`, {
         method: 'PATCH',
         headers: {
@@ -68,5 +98,6 @@ export const modifyEvent = async (_prevState: any, formData: FormData) => {
     })
 
     revalidatePath("/cp2")
+    revalidatePath("/cp3")
     return { msg: 'close' }
 }
